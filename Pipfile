@@ -6,14 +6,13 @@ verify_ssl = true
 [dev-packages]
 black = "*"
 ipython = "*"
-pylint = "*"
-mako = "*"
-inflection = "*"
 pre-commit = "*"
+pylint = "*"
 
 [packages]
+inflection = "*"
+mako = "*"
 scrapy = "*"
-python-dotenv = "*"
 
 [pipenv]
 allow_prereleases = true
