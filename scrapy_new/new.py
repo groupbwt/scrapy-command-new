@@ -34,7 +34,11 @@ class NewCommand(ScrapyCommand):
         )
 
         parser.add_option(
-            "--item", dest="item_class", default="", help="item class for pipeline"
+            "--item",
+            dest="item_class",
+            default="",
+            metavar="CLASSNAME",
+            help="item class for pipeline",
         )
 
         parser.add_option(
@@ -42,6 +46,7 @@ class NewCommand(ScrapyCommand):
             "--settings",
             dest="pipeline_priority",
             default=None,
+            metavar="PRIORITY",
             help="add pipeline to settings with specified priority",
         )
 
