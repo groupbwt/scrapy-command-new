@@ -104,7 +104,7 @@ class NewCommand(ScrapyCommand):
             raise UsageError()
 
         templates_dir = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "_templates"
+            os.path.dirname(os.path.abspath(__file__)), "templates"
         )
 
         SUPPORTED_TEMPLATE_TYPES = [
