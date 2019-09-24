@@ -22,4 +22,8 @@ setuptools.setup(
     ],
     python_requires=">=3.6",
     entry_points={"scrapy.commands": ["new=scrapy_new.new:NewCommand"]},
+    install_reequires=[
+        "scrapy",
+    ],
+    zip_safe=False,
 )
