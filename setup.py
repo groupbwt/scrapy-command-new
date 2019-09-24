@@ -24,6 +24,8 @@ setuptools.setup(
     entry_points={"scrapy.commands": ["new=scrapy_new.new:NewCommand"]},
     install_requires=[
         "scrapy",
+        "mako",
+        "inflection",
     ],
     zip_safe=False,
     include_package_data=True,
