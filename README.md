@@ -35,3 +35,13 @@ Also for `pipeline` and `spider` class an option `--rabbit` can be used to add R
 Option `--item` with value `CLASSNAME` is supported for generating pipelines, which adds an import and type-check for a provided item class to the resulting code.
 
 Option `--settings` is also supported for pipelines, with an optional integer value `PRIORITY` that adds the pipeline being generated to scrapy `settings.py` file with specified priority (default 300).
+
+## Installation
+
+This command is included in the [Scrapy Boilerplate](https://github.com/KristobalJunta/scrapy-boilerplate) out of the box. If you want to install it manually, you can get it from PyPi:
+
+```
+pip install scrapy-new
+```
+
+**Please note** that this package won't work with default Scrapy project structure, it requires a specific custom one, as described [here](https://github.com/KristobalJunta/scrapy-boilerplate#file-and-folder-structure).
