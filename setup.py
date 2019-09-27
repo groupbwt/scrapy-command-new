@@ -20,7 +20,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.5",
     entry_points={"scrapy.commands": ["new=scrapy_new.new:NewCommand"]},
     install_requires=[
         "scrapy",
@@ -29,7 +29,4 @@ setuptools.setup(
     ],
     zip_safe=False,
     include_package_data=True,
-    package_data={
-        'scrapy_new': ['templates/*.mako']
-    },
 )
