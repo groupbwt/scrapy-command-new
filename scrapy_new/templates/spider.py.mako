@@ -35,7 +35,7 @@ class ${class_name}(${ancestors}):
         % if use_rabbit:
         yield self.next_request()
         % else:
-        return []
+        pass
         % endif
 
     def parse(self, response):
