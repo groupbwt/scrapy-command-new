@@ -57,5 +57,3 @@ coverage.xml
 .scrapy
 
 .python-version
-
-Pipfile.lock
