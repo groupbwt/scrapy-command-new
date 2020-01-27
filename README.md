@@ -5,9 +5,9 @@ A package providing code generation command for scrapy CLI.
 *The project is a WIP, so expect major changes and additions (latter, mostly).
 Master branch is to be considered as always ready to use, with major changes/features introduced in feature branches.*
 
-This is a part of a bigger project - [Scrapy Boilerplate](https://github.com/KristobalJunta/scrapy-boilerplate).
+This is a part of a bigger project - [Scrapy Boilerplate](https://github.com/groupbwt/scrapy-boilerplate).
 
-The command works with a specific scrapy project structure (not the default one). Rationale for this is described [here](https://github.com/KristobalJunta/scrapy-boilerplate#file-and-folder-structure).
+The command works with a specific scrapy project structure (not the default one). Rationale for this is described [here](https://github.com/groupbwt/scrapy-boilerplate#file-and-folder-structure).
 
 ## Usage
 
@@ -38,10 +38,10 @@ Option `--settings` is also supported for pipelines, with an optional integer va
 
 ## Installation
 
-This command is included in the [Scrapy Boilerplate](https://github.com/KristobalJunta/scrapy-boilerplate) out of the box. If you want to install it manually, you can get it from PyPi:
+This command is included in the [Scrapy Boilerplate](https://github.com/groupbwt/scrapy-boilerplate) out of the box. If you want to install it manually, you can get it from PyPi:
 
 ```
 pip install scrapy-new
 ```
 
-**Please note** that this package won't work with default Scrapy project structure, it requires a specific custom one, as described [here](https://github.com/KristobalJunta/scrapy-boilerplate#file-and-folder-structure).
+**Please note** that this package won't work with default Scrapy project structure, it requires a specific custom one, as described [here](https://github.com/groupbwt/scrapy-boilerplate#file-and-folder-structure).

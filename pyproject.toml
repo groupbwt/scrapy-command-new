@@ -2,7 +2,7 @@
 name = "scrapy-command-new"
 version = "0.0.8"
 description = "A package providing code generation command for scrapy CLI"
-authors = ["KristobalJunta <junta.kristobal@gmail.com>"]
+authors = ["Kristobal Junta <junta.kristobal@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]

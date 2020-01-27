@@ -13,7 +13,7 @@ setuptools.setup(
     description="A package providing code generation command for scrapy CLI",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/KristobalJunta/scrapy-command-new",
+    url="https://github.com/groupbwt/scrapy-command-new",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
