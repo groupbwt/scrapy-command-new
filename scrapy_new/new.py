@@ -135,7 +135,7 @@ class NewCommand(ScrapyCommand):
         item_class = inflection.camelize(opts.item_class) if opts.item_class else None
 
         file_prefix = DEST_PREFIXES.get(template_type, [])
-        file_name = command_name if template_type == "command" else class_name
+        file_name = command_name
         file_path = os.path.join(*file_prefix, "{}.py".format(file_name))
 
         if os.path.exists(file_path):
