@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="scrapy_new",
-    version="0.0.8",
+    version="0.1.0",
     author="Kristobal Junta",
     author_email="junta.kristobal@gmail.com",
     description="A package providing code generation command for scrapy CLI",

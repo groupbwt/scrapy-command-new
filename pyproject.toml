@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "scrapy-command-new"
-version = "0.0.8"
+version = "0.1.0"
 description = "A package providing code generation command for scrapy CLI"
 authors = ["Kristobal Junta <junta.kristobal@gmail.com>"]
 license = "MIT"
