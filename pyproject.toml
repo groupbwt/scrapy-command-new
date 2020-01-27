@@ -2,8 +2,22 @@
 name = "scrapy_new"
 version = "0.1.0"
 description = "A package providing code generation command for scrapy CLI"
-authors = ["Kristobal Junta <junta.kristobal@gmail.com>"]
+authors = [
+    "Kristobal Junta <junta.kristobal@gmail.com>"
+]
 license = "MIT"
+
+readme = "README.md"
+
+repository = "https://github.com/groupbwt/scrapy-command-new"
+homepage = "https://github.com/groupbwt/scrapy-command-new"
+
+keywords = ["scrapy"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
 
 [tool.poetry.dependencies]
 python = "^3.6"
