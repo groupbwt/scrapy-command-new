@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import logging
 import operator
 import os
 import re
@@ -9,7 +8,6 @@ import inflection
 from mako.template import Template
 from scrapy.commands import ScrapyCommand
 from scrapy.exceptions import UsageError
-from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
 
 
