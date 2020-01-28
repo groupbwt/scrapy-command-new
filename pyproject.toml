@@ -31,6 +31,9 @@ ipython = "^7.11.1"
 pylint = "^2.4.4"
 pre-commit = "^1.21.0"
 
+[tool.poetry.plugins."scrapy.commands"]
+new = "scrapy_new.new:NewCommand"
+
 [tool.black]
 line-length = 88
 target-version = ['py36', 'py37']
