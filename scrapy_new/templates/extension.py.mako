@@ -11,7 +11,7 @@ class ${class_name}:
 
     @classmethod
     def from_crawler(cls, crawler):
-        if not crawler.settings.getbool("MYEXT_ENABLED"):
+        if not crawler.settings.getbool("${logger_name}_ENABLED"):
             raise NotConfigured
 
         ext = cls()
