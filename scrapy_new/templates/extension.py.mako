@@ -5,13 +5,13 @@ from scrapy import signals
 from scrapy.exceptions import NotConfigured
 
 
-class ${class_name}(object):
+class ${class_name}:
     def __init__(self, item_count):
         self.logger = logging.getLogger(__name__)
 
     @classmethod
     def from_crawler(cls, crawler):
-        if not crawler.settings.getbool("MYEXT_ENABLED"):
+        if not crawler.settings.getbool("${logger_name}_ENABLED"):
             raise NotConfigured
 
         ext = cls()

@@ -15,6 +15,7 @@ from sqlalchemy import (
 )
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.mysql import BIGINT
 
 from .base import Base
 from .json_serializable import JSONSerializable
@@ -23,7 +24,7 @@ from .json_serializable import JSONSerializable
 class ${class_name}(Base, JSONSerializable):
     __tablename__ = "${table_name}"
 
-    id = Column("id", Integer(), primary_key=True)
+    id = Column("id", BIGINT(unsigned=True), primary_key=True, autoincrement=True)
 
     created_at = Column("created_at", TIMESTAMP, server_default=func.now())
     updated_at = Column(

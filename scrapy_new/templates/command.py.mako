@@ -20,7 +20,16 @@ from .base_command import BaseCommand
 class ${class_name}(BaseCommand):
     def __init__(self):
         super().__init__()
+        self.engine = None
+        self.session = None
+        % if use_rabbit:
+        self.connection = None
+        self.channel = None
+        % endif
+        self.stopped = False
 
+    def connect(self):
+        """Connects to database and rabbitmq (optionally)"""
         self.engine = create_engine(mysql_connection_string())
         self.session = Session(self.engine)
         % if use_rabbit:
@@ -44,8 +53,6 @@ class ${class_name}(BaseCommand):
         self.channel.queue_declare(queue=queue_name, durable=True)
         % endif
 
-        self.stopped = False
-
     def signal_handler(self, signal, frame):
         self.logger.info("received signal, exiting...")
         self.stopped = True
@@ -56,9 +63,12 @@ class ${class_name}(BaseCommand):
     def run(self, args, opts):
         self.set_logger("${logger_name}", self.settings.get("LOG_LEVEL"))
         configure_logging()
+        self.connect()
 
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
+
+        # your code here
 
         % if use_rabbit:
         self.channel.close()

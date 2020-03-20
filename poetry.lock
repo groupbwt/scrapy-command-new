@@ -624,12 +624,13 @@ category = "main"
 description = "A high-level Web Crawling and Web Scraping framework"
 name = "scrapy"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-version = "1.8.0"
+python-versions = ">=3.5"
+version = "2.0.0"
 
 [package.dependencies]
 PyDispatcher = ">=2.0.5"
 PyPyDispatcher = ">=2.1.0"
+Twisted = ">=17.9.0"
 cryptography = ">=2.0"
 cssselect = ">=0.9.1"
 lxml = ">=3.5.0"
@@ -638,13 +639,8 @@ protego = ">=0.1.15"
 pyOpenSSL = ">=16.2.0"
 queuelib = ">=1.4.2"
 service-identity = ">=16.0.0"
-six = ">=1.10.0"
 w3lib = ">=1.17.0"
 "zope.interface" = ">=4.1.3"
-
-[package.dependencies.Twisted]
-python = ">=3.5"
-version = ">=17.9.0"
 
 [[package]]
 category = "main"
@@ -701,7 +697,6 @@ test = ["pytest", "mock"]
 [[package]]
 category = "main"
 description = "An asynchronous networking framework written in Python"
-marker = "python_version >= \"3.5\""
 name = "twisted"
 optional = false
 python-versions = "*"
@@ -805,7 +800,7 @@ test = ["zope.event"]
 testing = ["coverage", "nose", "zope.event"]
 
 [metadata]
-content-hash = "22e4ec9e061448e77b85554d16dbc4246255b40a3b8f432106a76e74c605a3d9"
+content-hash = "8a9cb0e2bf2e9cc893bbb363c7130b0753612a8467b4daa8a734bc6f4fa63311"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -1048,6 +1043,11 @@ markupsafe = [
     {file = "MarkupSafe-1.1.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:ba59edeaa2fc6114428f1637ffff42da1e311e29382d81b339c1817d37ec93c6"},
     {file = "MarkupSafe-1.1.1-cp37-cp37m-win32.whl", hash = "sha256:b00c1de48212e4cc9603895652c5c410df699856a2853135b3967591e4beebc2"},
     {file = "MarkupSafe-1.1.1-cp37-cp37m-win_amd64.whl", hash = "sha256:9bf40443012702a1d2070043cb6291650a0841ece432556f784f004937f0f32c"},
+    {file = "MarkupSafe-1.1.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:6788b695d50a51edb699cb55e35487e430fa21f1ed838122d722e0ff0ac5ba15"},
+    {file = "MarkupSafe-1.1.1-cp38-cp38-manylinux1_i686.whl", hash = "sha256:cdb132fc825c38e1aeec2c8aa9338310d29d337bebbd7baa06889d09a60a1fa2"},
+    {file = "MarkupSafe-1.1.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:13d3144e1e340870b25e7b10b98d779608c02016d5184cfb9927a9f10c689f42"},
+    {file = "MarkupSafe-1.1.1-cp38-cp38-win32.whl", hash = "sha256:596510de112c685489095da617b5bcbbac7dd6384aeebeda4df6025d0256a81b"},
+    {file = "MarkupSafe-1.1.1-cp38-cp38-win_amd64.whl", hash = "sha256:e8313f01ba26fbbe36c7be1966a7b7424942f670f38e666995b88d012765b9be"},
     {file = "MarkupSafe-1.1.1.tar.gz", hash = "sha256:29872e92839765e546828bb7754a68c418d927cd064fd4708fab9fe9c8bb116b"},
 ]
 mccabe = [
@@ -1189,8 +1189,8 @@ regex = [
     {file = "regex-2020.1.8.tar.gz", hash = "sha256:d0f424328f9822b0323b3b6f2e4b9c90960b24743d220763c7f07071e0778351"},
 ]
 scrapy = [
-    {file = "Scrapy-1.8.0-py2.py3-none-any.whl", hash = "sha256:4352c64c7ffc70148a7988db837bb25bccafb3350ab9c978c1f9a8930521959b"},
-    {file = "Scrapy-1.8.0.tar.gz", hash = "sha256:fe06576f9a4971de9dc0175c60fd92561e8275f2bad585c1cb5d65c5181b2db0"},
+    {file = "Scrapy-2.0.0-py2.py3-none-any.whl", hash = "sha256:765f5b328b83b7f922edf734575e31f3c6d142c1d9eb9cd513d9114c5e2b9fb7"},
+    {file = "Scrapy-2.0.0.tar.gz", hash = "sha256:bf1bad45e2b664b50c6b04a414ca96c739279ba5a14d685ba90904af8427d9f1"},
 ]
 service-identity = [
     {file = "service_identity-18.1.0-py2.py3-none-any.whl", hash = "sha256:001c0707759cb3de7e49c078a7c0c9cd12594161d3bf06b9c254fdcb1a60dc36"},
