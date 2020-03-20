@@ -17,7 +17,7 @@ class ${class_name}(${ancestors}):
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
-        spider = super(${class_name}, cls).from_crawler(crawler, *args, **kwargs)
+        spider = super().from_crawler(crawler, *args, **kwargs)
         crawler.signals.connect(spider.spider_closed, signal=scrapy.signals.spider_closed)
         return spider
 
