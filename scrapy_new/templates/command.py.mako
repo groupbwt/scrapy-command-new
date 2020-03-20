@@ -64,7 +64,7 @@ class ${class_name}(BaseCommand):
         self.set_logger("${logger_name}", self.settings.get("LOG_LEVEL"))
         configure_logging()
         self.connect()
-       
+
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
 
