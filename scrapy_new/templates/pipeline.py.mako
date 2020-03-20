@@ -14,7 +14,7 @@ from items import ${item_class}
 from helpers import mysql_connection_string
 
 
-class ${class_name}(object):
+class ${class_name}:
     def __init__(self):
         self.engine = create_engine(mysql_connection_string())
         self.session = None
@@ -45,7 +45,7 @@ class ${class_name}(object):
     def process_item(self, item, spider):
         % if item_class:
         if isinstance(item, ${item_class}):
-            pass
+            return item
 
         % endif
         return item

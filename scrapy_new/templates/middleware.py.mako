@@ -3,7 +3,7 @@
 from scrapy import signals
 
 
-class ${class_name}(object):
+class ${class_name}:
     @classmethod
     def from_crawler(cls, crawler):
         s = cls()

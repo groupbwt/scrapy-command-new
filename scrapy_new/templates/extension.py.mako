@@ -5,7 +5,7 @@ from scrapy import signals
 from scrapy.exceptions import NotConfigured
 
 
-class ${class_name}(object):
+class ${class_name}:
     def __init__(self, item_count):
         self.logger = logging.getLogger(__name__)
 
