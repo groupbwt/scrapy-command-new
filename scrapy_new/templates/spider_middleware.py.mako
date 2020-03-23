@@ -1,6 +1,6 @@
 ## -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
-from typing import Iterator, Iterable
+from typing import Iterator, Iterable, Union
 
 from scrapy import signals, Spider, Request, Item
 from scrapy.http import Response
@@ -18,8 +18,8 @@ class ${class_name}:
         return None
 
     def process_spider_output(
-        self, response: Response, result: Iterable[Request | Item], spider: Spider
-    ) -> Iterator[Request | Item]:
+        self, response: Response, result: Iterable[Union[Request, Item]], spider: Spider
+    ) -> Iterator[Union[Request, Item]]:
         for i in result:
             yield i
 
