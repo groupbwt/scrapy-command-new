@@ -79,8 +79,15 @@ class NewCommand(ScrapyCommand):
         pipelines_list = [i for i in pipelines_list if i]
         pipelines_list = [i.split(":") for i in pipelines_list]
         pipelines_list = [(i[0].strip("'\""), i[1]) for i in pipelines_list]
-        pipelines_list.append((class_name, priority))
-        pipelines_list = sorted(pipelines_list, key=operator.itemgetter(1))
+        # remove possible duplicates
+        pipelines_set = set(pipelines_list)
+        for name, val in pipelines_set:
+            if name == class_name:
+                pipelines_set.remove((name, val))
+                break
+        pipelines_set.add((class_name, priority))
+        # continue processing
+        pipelines_list = sorted(list(pipelines_set), key=operator.itemgetter(1))
         pipelines_list = [('"{}"'.format(i[0]), i[1]) for i in pipelines_list]
         pipelines_str = ",\n    ".join((": ".join(i) for i in pipelines_list))
         pipelines_str = "    " + pipelines_str + ","
