@@ -25,7 +25,7 @@ class ${class_name}(BaseCommand):
         % endif
         self.stopped = False
 
-    def connect(self):
+    def connect(self) -> None:
         """Connects to database and rabbitmq (optionally)"""
         self.engine = create_engine(mysql_connection_string())
         self.session = Session(self.engine)
@@ -38,14 +38,14 @@ class ${class_name}(BaseCommand):
         self.channel.queue_declare(queue=queue_name, durable=True)
         % endif
 
-    def signal_handler(self, signal, frame):
+    def signal_handler(self, signal, frame) -> None:
         self.logger.info("received signal, exiting...")
         self.stopped = True
 
-    def add_options(self, parser):
+    def add_options(self, parser) -> None:
         super().add_options(parser)
 
-    def run(self, args, opts):
+    def run(self, args: list, opts: list) -> None:
         self.set_logger("${logger_name}", self.settings.get("LOG_LEVEL"))
         configure_logging()
         self.connect()

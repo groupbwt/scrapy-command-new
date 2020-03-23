@@ -1,7 +1,15 @@
 ## -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
+from typing import Iterator
+
 import scrapy
+
+from scrapy import Item, Request, signals
+from scrapy.http import Response
+from scrapy.crawler import Crawler
 % if use_rabbit:
+
+from pika.spec import BasicProperties
 from rabbitmq import RabbitSpider
 % endif
 <%
@@ -16,9 +24,9 @@ class ${class_name}(${ancestors}):
     name = "${spider_name}"
 
     @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
+    def from_crawler(cls, crawler: Crawler, *args, **kwargs):
         spider = super().from_crawler(crawler, *args, **kwargs)
-        crawler.signals.connect(spider.spider_closed, signal=scrapy.signals.spider_closed)
+        crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
         return spider
 
     def __init__(self, *args, **kwargs):
@@ -28,20 +36,21 @@ class ${class_name}(${ancestors}):
         % endif
 
     % if use_rabbit:
-    def prepare_request(self, method, header_frame, body):
+    def prepare_request(self, method, header_frame: BasicProperties, body: str) -> Request:
         pass
+
     % endif
-    def start_requests(self):
+    def start_requests(self) -> Iterator[Request]:
         % if use_rabbit:
         yield self.next_request()
         % else:
         pass
         % endif
 
-    def parse(self, response):
+    def parse(self, response: Response) -> Iterator[Item]:
         pass
 
-    def spider_closed(self):
+    def spider_closed(self) -> None:
         % if use_rabbit:
         self.channel.close()
         self.connection.close()
