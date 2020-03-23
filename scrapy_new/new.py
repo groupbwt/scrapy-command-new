@@ -16,13 +16,13 @@ class NewCommand(ScrapyCommand):
         super().__init__()
         self.settings = get_project_settings()
 
-    def syntax(self):
+    def syntax(self) -> str:
         return "<template type> <camelcase class name>"
 
-    def short_desc(self):
+    def short_desc(self) -> str:
         return "Generate new class file from template"
 
-    def add_options(self, parser):
+    def add_options(self, parser) -> None:
         super().add_options(parser)
 
         parser.add_option(
@@ -59,7 +59,7 @@ class NewCommand(ScrapyCommand):
             help="enable debug output for this command",
         )
 
-    def _add_pipeline_to_settings(self, class_name, priority):
+    def _add_pipeline_to_settings(self, class_name: str, priority: str) -> None:
         try:
             priority = str(abs(int(priority)))
         except TypeError:
@@ -99,7 +99,7 @@ class NewCommand(ScrapyCommand):
         with open("settings.py", "w") as settings_file:
             settings_file.write(settings_text)
 
-    def run(self, args, opts):
+    def run(self, args: list, opts: list) -> None:
         if len(args) < 2:
             raise UsageError()
 
