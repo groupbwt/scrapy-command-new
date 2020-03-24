@@ -34,7 +34,9 @@ Also for `pipeline` and `spider` class an option `--rabbit` can be used to add R
 
 Option `--item` with value `CLASSNAME` is supported for generating pipelines, which adds an import and type-check for a provided item class to the resulting code.
 
-Option `--settings` is also supported for pipelines, with an optional integer value `PRIORITY` that adds the pipeline being generated to scrapy `settings.py` file with specified priority (default 300).
+Option `--settings` is also supported for pipelines, extension, middlewares and spider middlewares. It has an optional integer value `PRIORITY` that adds specified priority (default 300). It indicates a class to be added to scrapy project (or spider) settings.
+
+Option `--file` can be used when using `--settings` for specifying settings file name. Default value is `settings.py` file. You use set spider file for adding newly generated class to spiders' `custom_settings` property.
 
 ## Installation
 
