@@ -1,9 +1,10 @@
 ## -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
 import logging
-from scrapy import signals, Spider, Item
-from scrapy.exceptions import NotConfigured
+
+from scrapy import Item, Spider, signals
 from scrapy.crawler import Crawler
+from scrapy.exceptions import NotConfigured
 
 
 class ${class_name}:

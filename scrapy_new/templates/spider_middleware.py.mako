@@ -1,10 +1,10 @@
 ## -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
-from typing import Iterator, Iterable, Union
+from typing import Iterable, Iterator, Union
 
-from scrapy import signals, Spider, Request, Item
-from scrapy.http import Response
+from scrapy import Item, Request, Spider, signals
 from scrapy.crawler import Crawler
+from scrapy.http import Response
 
 
 class ${class_name}:

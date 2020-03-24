@@ -1,8 +1,8 @@
 ## -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
-from scrapy import signals, Request, Spider
-from scrapy.http import Response
+from scrapy import Request, Spider, signals
 from scrapy.crawler import Crawler
+from scrapy.http import Response
 
 
 class ${class_name}:

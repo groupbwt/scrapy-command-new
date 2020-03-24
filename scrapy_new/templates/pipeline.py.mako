@@ -1,18 +1,15 @@
 ## -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
-from sqlalchemy import create_engine
-from sqlalchemy.exc import DataError, IntegrityError, InvalidRequestError
-from sqlalchemy.orm import Session
-
-from scrapy import Item, Spider
-
+% if use_rabbit:
+from helpers import PikaBlockingConnection, mysql_connection_string
+% endif
 % if item_class:
 from items import ${item_class}
 % endif
-from helpers import mysql_connection_string
-% if use_rabbit:
-from helpers import PikaBlockingConnection
-% endif
+from scrapy import Item, Spider
+from sqlalchemy import create_engine
+from sqlalchemy.exc import DataError, IntegrityError, InvalidRequestError
+from sqlalchemy.orm import Session
 
 
 class ${class_name}:

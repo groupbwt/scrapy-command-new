@@ -1,17 +1,15 @@
 ## -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
-from typing import Iterator
+from typing import Iterator, Union
 
 import scrapy
-
-from scrapy import Item, Request, signals
-from scrapy.http import Response
-from scrapy.crawler import Crawler
 % if use_rabbit:
-
 from pika.spec import BasicProperties
 from rabbitmq import RabbitSpider
 % endif
+from scrapy import Item, Request, signals
+from scrapy.crawler import Crawler
+from scrapy.http import Response
 <%
     ancestors = ["scrapy.Spider"]
     if use_rabbit:
@@ -47,7 +45,7 @@ class ${class_name}(${ancestors}):
         pass
         % endif
 
-    def parse(self, response: Response) -> Iterator[Item]:
+    def parse(self, response: Response) -> Iterator[Union[Item, Request]]:
         pass
 
     def spider_closed(self) -> None:

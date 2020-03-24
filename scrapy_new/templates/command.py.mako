@@ -1,16 +1,14 @@
 ## -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
 import signal
-
+% if use_rabbit:
+from helpers import PikaBlockingConnection, mysql_connection_string
+% endif
 from scrapy.utils.log import configure_logging
 from sqlalchemy import create_engine
-from sqlalchemy.exc import IntegrityError, InvalidRequestError, DataError
+from sqlalchemy.exc import DataError, IntegrityError, InvalidRequestError
 from sqlalchemy.orm import Session
 
-from helpers import mysql_connection_string
-% if use_rabbit:
-from helpers import PikaBlockingConnection
-% endif
 from .base_command import BaseCommand
 
 
