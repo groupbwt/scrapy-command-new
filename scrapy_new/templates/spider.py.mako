@@ -21,6 +21,8 @@ from scrapy.http import Response
 class ${class_name}(${ancestors}):
     name = "${spider_name}"
 
+    custom_settings = {}
+
     @classmethod
     def from_crawler(cls, crawler: Crawler, *args, **kwargs):
         spider = super().from_crawler(crawler, *args, **kwargs)
