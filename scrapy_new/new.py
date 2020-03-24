@@ -6,6 +6,7 @@ import sys
 import json
 
 from typing import List
+from re import Match
 
 import inflection
 from mako.template import Template
@@ -24,6 +25,7 @@ class NewCommand(ScrapyCommand):
             "middleware": "DOWNLOADER_MIDDLEWARES",
             "spider_middleware": "SPIDER_MIDDLEWARES",
         }
+        self.default_settings_filename = "settings.py"
 
     def syntax(self) -> str:
         return "<template type> <camelcase class name>"
@@ -60,6 +62,15 @@ class NewCommand(ScrapyCommand):
         )
 
         parser.add_option(
+            "-f",
+            "--file",
+            dest="filename",
+            default=self.default_settings_filename,
+            metavar="FILENAME",
+            help="name of settings or spider class",
+        )
+
+        parser.add_option(
             "-t",
             "--terminal",
             dest="priority_terminal",
@@ -77,48 +88,74 @@ class NewCommand(ScrapyCommand):
             help="enable debug output for this command",
         )
 
+    def get_settings_dict(self, setting_str: Match) -> dict:
+        """Returns object from setting string"""
+        # TODO need try/except
+        capture = setting_str.group(0)
+        capture_inner = re.search(r"{(.*)}", capture, re.DOTALL)
+        try:
+            return eval(f"{{{capture_inner.group(1)}}}")
+        except SyntaxError as se:
+            print(f"Got {se}")
+        return {}
+
     def _add_to_settings(
-        self, settings_name: str, class_name: str, priority: str
+        self, filename: str, settings_name: str, class_name: str, priority: str
     ) -> None:
         try:
             priority = str(abs(int(priority)))
         except TypeError:
             priority = "300"
 
-        with open("settings.py", "r") as settings_file:
+        if not filename:
+            filename = self.default_settings_filename
+
+        with open(filename, "r") as settings_file:
             settings_text = settings_file.read()
-
-        setting_regex = settings_name + r"\s*=\s*{.*?}"
-
-        pipelines_str = re.search(setting_regex, settings_text, re.DOTALL)
-        if pipelines_str:
-            capture = pipelines_str.group(0)
-            capture_inner = re.search(r"{(.*)}", capture, re.DOTALL)
-            if capture_inner:
-                capture_inner = capture_inner.group(1)
-                capture_inner = re.sub(r"\s", "", capture_inner)
-                pipelines_list = capture_inner.split(",")
-                pipelines_list = [i for i in pipelines_list if i]
-                pipelines_list = [i.split(":") for i in pipelines_list]
-                pipelines_list = [(i[0].strip("'\""), i[1]) for i in pipelines_list]
-                # remove possible duplicates
-                pipelines_set = set(pipelines_list)
-                for name, val in pipelines_set:
-                    if name == class_name:
-                        pipelines_set.remove((name, val))
-                        break
-                pipelines_set.add((class_name, priority))
-                # continue processing
-                pipelines_list = sorted(list(pipelines_set), key=operator.itemgetter(1))
-                pipelines_list = [('"{}"'.format(i[0]), i[1]) for i in pipelines_list]
-                pipelines_str = ",\n    ".join((": ".join(i) for i in pipelines_list))
-                pipelines_str = "    " + pipelines_str + ","
-                pipelines_str = f"{settings_name} = {{\n{pipelines_str}\n}}"
+        is_custom_settings = "custom_settings" in settings_text
+        if not is_custom_settings:
+            # common settings.py
+            setting_regex = settings_name + r"\s*=\s*{.*?}"
+            setting_str = re.search(setting_regex, settings_text, re.DOTALL)
+            if setting_str:
+                settings_dict = self.get_settings_dict(setting_str)
+                settings_dict[class_name] = int(priority)
+                # sorted(list(pipelines_set), key=operator.itemgetter(1))
+                dict_str = json.dumps(settings_dict, indent=4)
+                result_str = f"{settings_name} = {dict_str}".replace("'", '"')
                 settings_text = re.sub(
-                    setting_regex, pipelines_str, settings_text, flags=re.DOTALL
+                    setting_regex, result_str, settings_text, flags=re.DOTALL
                 )
-
-                with open("settings.py", "w") as settings_file:
+                with open(filename, "w") as settings_file:
+                    settings_file.write(settings_text)
+            else:
+                # setting does not exist yet
+                print(f"Created '{settings_name}' in {filename}")
+                # if input("Create one? [y/N] ").lower() not in ["y", "yes"]:
+                #    print("aborted setting creation")
+                #    return
+                with open(filename, "a") as settings_file:
+                    settings_file.write(f"\n{settings_name} = {{}}\n")
+        else:
+            # custom_settings
+            # TODO create custom_settings inside spider?
+            custom_setting_regex = r"custom_settings\s*=\s*\{.*?}\n"
+            setting_str = re.search(custom_setting_regex, settings_text, re.DOTALL)
+            if setting_str:
+                # spider custom settings
+                settings_dict = self.get_settings_dict(setting_str)
+                if settings_dict.get(settings_name):
+                    settings_dict[settings_name][class_name] = int(priority)
+                else:
+                    settings_dict[settings_name] = {class_name: int(priority)}
+                # sorted(list(pipelines_set), key=operator.itemgetter(1))
+                temp_dict_str = json.dumps(settings_dict, indent=4)
+                dict_str = "    ".join([l + "\n" for l in temp_dict_str.split("\n")])
+                result_str = f"custom_settings = {dict_str}".replace("'", '"')
+                settings_text = re.sub(
+                    custom_setting_regex, result_str, settings_text, flags=re.DOTALL,
+                )
+                with open(filename, "w") as settings_file:
                     settings_file.write(settings_text)
 
     def _add_to_terminal(
@@ -204,6 +241,7 @@ class NewCommand(ScrapyCommand):
         if template_type in self.SETTINGS_NAMES:
             if opts.priority:
                 self._add_to_settings(
+                    opts.filename,
                     self.SETTINGS_NAMES[template_type],
                     f"{file_prefix[0]}.{class_name}",
                     opts.priority,
@@ -214,13 +252,16 @@ class NewCommand(ScrapyCommand):
                     f"{file_prefix[0]}.{class_name}",
                     opts.priority_terminal,
                 )
+            # there will be error in eval if started
+            # with not formatted code next time
+            os.system(f"black {opts.filename}")
 
         with open(file_path, "w") as out_file:
             out_file.write(rendered_code)
 
         self.add_init_import(file_prefix, file_name, class_name)
 
-        print(f"created {template_type} {file_name}")
+        print(f"created {template_type} '{file_name}'")
 
     def add_init_import(self, file_prefix: List[str], file_name: str, class_name: str):
         init_file_path = os.path.join(*file_prefix, "__init__.py")
