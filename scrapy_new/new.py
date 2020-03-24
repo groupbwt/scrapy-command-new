@@ -112,7 +112,9 @@ class NewCommand(ScrapyCommand):
 
         with open(filename, "r") as settings_file:
             settings_text = settings_file.read()
-        is_custom_settings = "custom_settings" in settings_text
+        is_custom_settings = (
+            "custom_settings" in settings_text or "class" in settings_text
+        )
         if not is_custom_settings:
             # common settings.py
             setting_regex = settings_name + r"\s*=\s*{.*?}"
@@ -157,6 +159,8 @@ class NewCommand(ScrapyCommand):
                 )
                 with open(filename, "w") as settings_file:
                     settings_file.write(settings_text)
+            else:
+                print("ERROR: Given spider has no 'custom_settings' field!")
 
     def _add_to_terminal(
         self, settings_name: str, class_name: str, priority: str
