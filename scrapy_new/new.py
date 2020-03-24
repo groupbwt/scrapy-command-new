@@ -3,6 +3,9 @@ import operator
 import os
 import re
 import sys
+import json
+
+from typing import List
 
 import inflection
 from mako.template import Template
@@ -15,6 +18,12 @@ class NewCommand(ScrapyCommand):
     def __init__(self):
         super().__init__()
         self.settings = get_project_settings()
+        self.SETTINGS_NAMES = {
+            "pipeline": "ITEM_PIPELINES",
+            "extension": "EXTENSIONS",
+            "middleware": "DOWNLOADER_MIDDLEWARES",
+            "spider_middleware": "SPIDER_MIDDLEWARES",
+        }
 
     def syntax(self) -> str:
         return "<template type> <camelcase class name>"
@@ -44,10 +53,19 @@ class NewCommand(ScrapyCommand):
         parser.add_option(
             "-s",
             "--settings",
-            dest="pipeline_priority",
+            dest="priority",
             default=None,
             metavar="PRIORITY",
             help="add pipeline to settings with specified priority",
+        )
+
+        parser.add_option(
+            "-t",
+            "--terminal",
+            dest="priority_terminal",
+            default=None,
+            metavar="PRIORITY",
+            help="write pipeline with specified priority settings to terminal",
         )
 
         parser.add_option(
@@ -59,45 +77,61 @@ class NewCommand(ScrapyCommand):
             help="enable debug output for this command",
         )
 
-    def _add_pipeline_to_settings(self, class_name: str, priority: str) -> None:
+    def _add_to_settings(
+        self, settings_name: str, class_name: str, priority: str
+    ) -> None:
         try:
             priority = str(abs(int(priority)))
         except TypeError:
-            priority = 300
+            priority = "300"
 
         with open("settings.py", "r") as settings_file:
             settings_text = settings_file.read()
 
-        pipelines_regex = r"ITEM_PIPELINES\s*=\s*{.*?}"
+        setting_regex = settings_name + r"\s*=\s*{.*?}"
 
-        pipelines_str = re.search(pipelines_regex, settings_text, re.DOTALL)
-        capture = pipelines_str.group(0)
-        capture_inner = re.search(r"{(.*)}", capture, re.DOTALL)
-        capture_inner = capture_inner.group(1)
-        capture_inner = re.sub(r"\s", "", capture_inner)
-        pipelines_list = capture_inner.split(",")
-        pipelines_list = [i for i in pipelines_list if i]
-        pipelines_list = [i.split(":") for i in pipelines_list]
-        pipelines_list = [(i[0].strip("'\""), i[1]) for i in pipelines_list]
-        # remove possible duplicates
-        pipelines_set = set(pipelines_list)
-        for name, val in pipelines_set:
-            if name == class_name:
-                pipelines_set.remove((name, val))
-                break
-        pipelines_set.add((class_name, priority))
-        # continue processing
-        pipelines_list = sorted(list(pipelines_set), key=operator.itemgetter(1))
-        pipelines_list = [('"{}"'.format(i[0]), i[1]) for i in pipelines_list]
-        pipelines_str = ",\n    ".join((": ".join(i) for i in pipelines_list))
-        pipelines_str = "    " + pipelines_str + ","
-        pipelines_str = "ITEM_PIPELINES = {{\n{}\n}}".format(pipelines_str)
-        settings_text = re.sub(
-            pipelines_regex, pipelines_str, settings_text, flags=re.DOTALL
-        )
+        pipelines_str = re.search(setting_regex, settings_text, re.DOTALL)
+        if pipelines_str:
+            capture = pipelines_str.group(0)
+            capture_inner = re.search(r"{(.*)}", capture, re.DOTALL)
+            if capture_inner:
+                capture_inner = capture_inner.group(1)
+                capture_inner = re.sub(r"\s", "", capture_inner)
+                pipelines_list = capture_inner.split(",")
+                pipelines_list = [i for i in pipelines_list if i]
+                pipelines_list = [i.split(":") for i in pipelines_list]
+                pipelines_list = [(i[0].strip("'\""), i[1]) for i in pipelines_list]
+                # remove possible duplicates
+                pipelines_set = set(pipelines_list)
+                for name, val in pipelines_set:
+                    if name == class_name:
+                        pipelines_set.remove((name, val))
+                        break
+                pipelines_set.add((class_name, priority))
+                # continue processing
+                pipelines_list = sorted(list(pipelines_set), key=operator.itemgetter(1))
+                pipelines_list = [('"{}"'.format(i[0]), i[1]) for i in pipelines_list]
+                pipelines_str = ",\n    ".join((": ".join(i) for i in pipelines_list))
+                pipelines_str = "    " + pipelines_str + ","
+                pipelines_str = f"{settings_name} = {{\n{pipelines_str}\n}}"
+                settings_text = re.sub(
+                    setting_regex, pipelines_str, settings_text, flags=re.DOTALL
+                )
 
-        with open("settings.py", "w") as settings_file:
-            settings_file.write(settings_text)
+                with open("settings.py", "w") as settings_file:
+                    settings_file.write(settings_text)
+
+    def _add_to_terminal(
+        self, settings_name: str, class_name: str, priority: str
+    ) -> None:
+        try:
+            priority = str(abs(int(priority)))
+        except TypeError:
+            priority = "300"
+
+        setting_dict = {settings_name: {class_name: int(priority)}}
+        setting = f"custom_settings = {json.dumps(setting_dict)}"
+        print(f"Copy and paste this settings code to your spider:\n\n{setting}\n")
 
     def run(self, args: list, opts: list) -> None:
         if len(args) < 2:
@@ -167,14 +201,28 @@ class NewCommand(ScrapyCommand):
         if opts.debug:
             print(rendered_code)
 
-        if template_type == "pipeline" and opts.pipeline_priority:
-            self._add_pipeline_to_settings(
-                f"pipelines.{class_name}", opts.pipeline_priority
-            )
+        if template_type in self.SETTINGS_NAMES:
+            if opts.priority:
+                self._add_to_settings(
+                    self.SETTINGS_NAMES[template_type],
+                    f"{file_prefix[0]}.{class_name}",
+                    opts.priority,
+                )
+            if opts.priority_terminal:
+                self._add_to_terminal(
+                    self.SETTINGS_NAMES[template_type],
+                    f"{file_prefix[0]}.{class_name}",
+                    opts.priority_terminal,
+                )
 
         with open(file_path, "w") as out_file:
             out_file.write(rendered_code)
 
+        self.add_init_import(file_prefix, file_name, class_name)
+
+        print(f"created {template_type} {file_name}")
+
+    def add_init_import(self, file_prefix: List[str], file_name: str, class_name: str):
         init_file_path = os.path.join(*file_prefix, "__init__.py")
         if os.path.isfile(init_file_path):
             with open(init_file_path) as init_file:
@@ -186,13 +234,11 @@ class NewCommand(ScrapyCommand):
         new_import = f"from .{file_name} import {class_name}"
 
         imports = [line for line in lines[1:]]
-        imports = set(imports)
-        imports.add(new_import)
-        imports = sorted(list(imports))
+        imports_set = set(imports)
+        imports_set.add(new_import)
+        imports = sorted(list(imports_set))
         lines = lines[:1] + imports
 
         with open(init_file_path, "w") as init_file:
             init_file.write("\n".join(lines))
             init_file.write("\n")
-
-        print(f"created {template_type} {file_name}")
