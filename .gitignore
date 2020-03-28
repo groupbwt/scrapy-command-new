@@ -8,6 +8,7 @@ env.bak/
 venv.bak/
 
 *.log
+.mypy_cache/
 
 .vscode/
 .idea/

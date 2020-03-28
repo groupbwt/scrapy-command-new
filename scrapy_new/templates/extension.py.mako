@@ -1,16 +1,18 @@
 ## -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
 import logging
-from scrapy import signals
+
+from scrapy import Item, Spider, signals
+from scrapy.crawler import Crawler
 from scrapy.exceptions import NotConfigured
 
 
 class ${class_name}:
-    def __init__(self, item_count):
+    def __init__(self):
         self.logger = logging.getLogger(__name__)
 
     @classmethod
-    def from_crawler(cls, crawler):
+    def from_crawler(cls, crawler: Crawler):
         if not crawler.settings.getbool("${logger_name}_ENABLED"):
             raise NotConfigured
 
@@ -22,11 +24,11 @@ class ${class_name}:
 
         return ext
 
-    def spider_opened(self, spider):
+    def spider_opened(self, spider: Spider) -> None:
         pass
 
-    def spider_closed(self, spider):
+    def spider_closed(self, spider: Spider) -> None:
         pass
 
-    def item_scraped(self, item, spider):
+    def item_scraped(self, item: Item, spider: Spider) -> Item:
         pass

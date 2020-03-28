@@ -1,7 +1,7 @@
 ## -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
-import scrapy
+from scrapy import Field, Item
 
 
-class ${class_name}(scrapy.Item):
-    sample_field = scrapy.Field()
+class ${class_name}(Item):
+    sample_field = Field()
