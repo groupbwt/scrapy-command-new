@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
+import json
 import operator
 import os
 import re
 import sys
-import json
-
-from typing import List
+from os import path
 from re import Match
+from typing import List
 
 import inflection
 from mako.template import Template
@@ -37,6 +37,7 @@ class NewCommand(ScrapyCommand):
         super().add_options(parser)
 
         parser.add_option(
+            "-r",
             "--rabbit",
             action="store_true",
             dest="use_rabbit",
@@ -45,6 +46,7 @@ class NewCommand(ScrapyCommand):
         )
 
         parser.add_option(
+            "-i",
             "--item",
             dest="item_class",
             default="",
@@ -65,7 +67,7 @@ class NewCommand(ScrapyCommand):
             "-f",
             "--file",
             dest="filename",
-            default=self.default_settings_filename,
+            default=None,
             metavar="FILENAME",
             help="name of settings or spider class",
         )
@@ -90,7 +92,6 @@ class NewCommand(ScrapyCommand):
 
     def get_settings_dict(self, setting_str: Match) -> dict:
         """Returns object from setting string"""
-        # TODO need try/except
         capture = setting_str.group(0)
         capture_inner = re.search(r"{(.*)}", capture, re.DOTALL)
         try:
@@ -138,11 +139,13 @@ class NewCommand(ScrapyCommand):
                 #    return
                 with open(filename, "a") as settings_file:
                     settings_file.write(f"\n{settings_name} = {{}}\n")
+                self._add_to_settings(filename, settings_name, class_name, priority)
         else:
             # custom_settings
             # TODO create custom_settings inside spider?
-            custom_setting_regex = r"custom_settings\s*=\s*\{.*?}\n"
+            custom_setting_regex = r"custom_settings\s*=\s*\{.*}\n"
             setting_str = re.search(custom_setting_regex, settings_text, re.DOTALL)
+            print(self.get_settings_dict(setting_str))
             if setting_str:
                 # spider custom settings
                 settings_dict = self.get_settings_dict(setting_str)
@@ -214,9 +217,12 @@ class NewCommand(ScrapyCommand):
         logger_name = inflection.underscore(class_name).upper()
         item_class = inflection.camelize(opts.item_class) if opts.item_class else None
 
+        if class_name[0].isdigit():
+            raise UsageError(f"Class name violation in '{class_name}'")
+
         file_prefix = DEST_PREFIXES.get(template_type, [])
         file_name = command_name
-        file_path = os.path.join(*file_prefix, "{}.py".format(file_name))
+        file_path = os.path.join(*file_prefix, f"{file_name}.py")
 
         if os.path.exists(file_path):
             print("WARNING: file already exists")
@@ -242,23 +248,37 @@ class NewCommand(ScrapyCommand):
         if opts.debug:
             print(rendered_code)
 
-        if template_type in self.SETTINGS_NAMES:
-            if opts.priority:
+        if opts.priority:
+            opts.filename = self.default_settings_filename
+
+        if template_type in self.SETTINGS_NAMES and opts.filename:
+            filenames = opts.filename.split(",")
+            for filename in filenames:
+                if not path.exists(filename):
+                    # try find spider by class name
+                    spider_prefix = DEST_PREFIXES.get("spider", [])
+                    spider_file_name = inflection.underscore(filename)
+                    filename = os.path.join(*spider_prefix, f"{spider_file_name}.py")
+                    if not path.exists(filename):
+                        raise UsageError(
+                            f"Could not find specified file name: {filename}"
+                        )
                 self._add_to_settings(
-                    opts.filename,
+                    filename,
                     self.SETTINGS_NAMES[template_type],
                     f"{file_prefix[0]}.{class_name}",
                     opts.priority,
                 )
-            if opts.priority_terminal:
-                self._add_to_terminal(
-                    self.SETTINGS_NAMES[template_type],
-                    f"{file_prefix[0]}.{class_name}",
-                    opts.priority_terminal,
-                )
-            # there will be error in eval if started
-            # with not formatted code next time
-            os.system(f"black {opts.filename}")
+                if opts.priority_terminal:
+                    self._add_to_terminal(
+                        self.SETTINGS_NAMES[template_type],
+                        f"{file_prefix[0]}.{class_name}",
+                        opts.priority_terminal,
+                    )
+                # there will be error in eval if started
+                # with not formatted code next time
+                # TODO disable when not using settings
+                os.system(f"black {filename}")
 
         with open(file_path, "w") as out_file:
             out_file.write(rendered_code)
