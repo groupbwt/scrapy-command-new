@@ -16,7 +16,6 @@ class ${class_name}(BaseCommand):
     def __init__(self):
         super().__init__()
         self.engine = None
-        self.session = None
         % if use_rabbit:
         self.connection = None
         self.channel = None
@@ -26,7 +25,6 @@ class ${class_name}(BaseCommand):
     def connect(self) -> None:
         """Connects to database and rabbitmq (optionally)"""
         self.engine = create_engine(mysql_connection_string())
-        self.session = Session(self.engine)
         % if use_rabbit:
 
         queue_name = self.settings.get("QUEUE_NAME")  # LINKS_QUEUE or SAVER_QUEUE
@@ -57,4 +55,3 @@ class ${class_name}(BaseCommand):
         self.channel.close()
         self.connection.close()
         % endif
-        self.session.close()
