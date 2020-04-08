@@ -207,6 +207,10 @@ class NewCommand(ScrapyCommand):
             "pipeline": ["pipelines"],
             "spider_middleware": ["middlewares"],
             "spider": ["spiders"],
+            "helper": ["helpers"],
+            "rabbitmq": ["rabbitmq"],
+            "pm2": ["pm2"],
+            "loader": ["loaders"],
         }
 
         template_type = args[0]
