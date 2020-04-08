@@ -215,11 +215,6 @@ class NewCommand(ScrapyCommand):
 
         template_type = args[0]
 
-        if template_type not in SUPPORTED_TEMPLATE_TYPES:
-            print(f"ERROR: unsupported template type: {template_type}")
-            print("supported types: {}".format(repr(SUPPORTED_TEMPLATE_TYPES)))
-            sys.exit(1)
-
         if opts.custom_templates_dir:
             # feature for adding custom templates
             # uses TEMPLATES_MODULE setting in settings.py
@@ -229,8 +224,16 @@ class NewCommand(ScrapyCommand):
                 tmp = os.path.join(TEMPLATES_MODULE, "{}.py.mako".format(template_type))
                 if os.path.exists(tmp):
                     templates_dir = TEMPLATES_MODULE
+                    SUPPORTED_TEMPLATE_TYPES.extend(
+                        name.split(".")[0] for name in os.listdir(templates_dir)
+                    )
             else:
                 raise UsageError(f"No settings.py in project!")
+
+        if template_type not in SUPPORTED_TEMPLATE_TYPES:
+            print(f"ERROR: unsupported template type: {template_type}")
+            print("supported types: {}".format(repr(SUPPORTED_TEMPLATE_TYPES)))
+            sys.exit(1)
 
         template_name = os.path.join(templates_dir, "{}.py.mako".format(template_type))
         template = Template(filename=template_name)
