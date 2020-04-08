@@ -90,6 +90,15 @@ class NewCommand(ScrapyCommand):
             help="enable debug output for this command",
         )
 
+        parser.add_option(
+            "-c",
+            "--custom",
+            action="store_true",
+            dest="custom_templates_dir",
+            default=False,
+            help="enable using of custom template modules",
+        )
+
     def get_settings_dict(self, setting_str: Match) -> dict:
         """Returns object from setting string"""
         capture = setting_str.group(0)
@@ -206,6 +215,18 @@ class NewCommand(ScrapyCommand):
             print(f"ERROR: unsupported template type: {template_type}")
             print("supported types: {}".format(repr(SUPPORTED_TEMPLATE_TYPES)))
             sys.exit(1)
+
+        if opts.custom_templates_dir:
+            # feature for adding custom templates
+            # uses TEMPLATES_MODULE setting in settings.py
+            if os.path.exists(self.default_settings_filename):
+                from settings import TEMPLATES_MODULE  # isort:skip
+
+                tmp = os.path.join(TEMPLATES_MODULE, "{}.py.mako".format(template_type))
+                if os.path.exists(tmp):
+                    templates_dir = TEMPLATES_MODULE
+            else:
+                raise UsageError(f"No settings.py in project!")
 
         template_name = os.path.join(templates_dir, "{}.py.mako".format(template_type))
         template = Template(filename=template_name)
