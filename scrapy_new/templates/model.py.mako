@@ -13,3 +13,4 @@ class ${class_name}(Base, JSONSerializable, MysqlPrimaryKeyMixin, MysqlTimestamp
     __tablename__ = "${table_name}"
 
     # TODO
+    pass
