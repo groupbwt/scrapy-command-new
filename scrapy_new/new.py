@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import importlib
 import json
 import operator
 import os
@@ -6,10 +7,11 @@ import re
 import sys
 from os import path
 from re import Match
-from typing import List
+from typing import Dict, List, Optional
 
 import inflection
 from mako.template import Template
+from scrapy import Spider
 from scrapy.commands import ScrapyCommand
 from scrapy.exceptions import UsageError
 from scrapy.utils.project import get_project_settings
@@ -99,19 +101,17 @@ class NewCommand(ScrapyCommand):
             help="enable using of custom template modules",
         )
 
-    def get_settings_dict(self, setting_str: Match) -> dict:
-        """Returns object from setting string"""
-        capture = setting_str.group(0)
-        capture_inner = re.search(r"{(.*)}", capture, re.DOTALL)
-        try:
-            return eval(f"{{{capture_inner.group(1)}}}")
-        except SyntaxError as se:
-            print(f"Got {se}")
-        return {}
-
     def _add_to_settings(
         self, filename: str, settings_name: str, class_name: str, priority: str
     ) -> None:
+        """Adds newly created class to settings: either project`s or spider`s custom.
+
+        Args:
+            filename (str): name of settings or spider file
+            settings_name (str): scrapy setting name for created class
+            class_name (str):  name of created class
+            priority (str): priority of created class 
+        """
         try:
             priority = str(abs(int(priority)))
         except TypeError:
@@ -122,61 +122,187 @@ class NewCommand(ScrapyCommand):
 
         with open(filename, "r") as settings_file:
             settings_text = settings_file.read()
-        is_custom_settings = (
-            "custom_settings" in settings_text or "class" in settings_text
-        )
-        if not is_custom_settings:
-            # common settings.py
-            setting_regex = settings_name + r"\s*=\s*{.*?}"
-            setting_str = re.search(setting_regex, settings_text, re.DOTALL)
-            if setting_str:
-                settings_dict = self.get_settings_dict(setting_str)
-                settings_dict[class_name] = int(priority)
-                # sorted(list(pipelines_set), key=operator.itemgetter(1))
-                dict_str = json.dumps(settings_dict, indent=4)
-                result_str = f"{settings_name} = {dict_str}".replace("'", '"')
-                settings_text = re.sub(
-                    setting_regex, result_str, settings_text, flags=re.DOTALL
+            is_custom_settings = (
+                "custom_settings" in settings_text or "class" in settings_text
+            )
+            if not is_custom_settings:
+                # common settings.py
+                self.add_to_project_settings(
+                    settings_text, settings_name, priority, class_name, filename
                 )
-                with open(filename, "w") as settings_file:
-                    settings_file.write(settings_text)
             else:
-                # setting does not exist yet
-                print(f"Created '{settings_name}' in {filename}")
-                # if input("Create one? [y/N] ").lower() not in ["y", "yes"]:
-                #    print("aborted setting creation")
-                #    return
-                with open(filename, "a") as settings_file:
-                    settings_file.write(f"\n{settings_name} = {{}}\n")
-                self._add_to_settings(filename, settings_name, class_name, priority)
-        else:
-            # custom_settings
-            # TODO create custom_settings inside spider?
-            custom_setting_regex = r"custom_settings\s*=\s*\{.*}\n"
-            setting_str = re.search(custom_setting_regex, settings_text, re.DOTALL)
-            print(self.get_settings_dict(setting_str))
-            if setting_str:
-                # spider custom settings
-                settings_dict = self.get_settings_dict(setting_str)
-                if settings_dict.get(settings_name):
-                    settings_dict[settings_name][class_name] = int(priority)
-                else:
-                    settings_dict[settings_name] = {class_name: int(priority)}
-                # sorted(list(pipelines_set), key=operator.itemgetter(1))
-                temp_dict_str = json.dumps(settings_dict, indent=4)
-                dict_str = "    ".join([l + "\n" for l in temp_dict_str.split("\n")])
-                result_str = f"custom_settings = {dict_str}".replace("'", '"')
-                settings_text = re.sub(
-                    custom_setting_regex, result_str, settings_text, flags=re.DOTALL,
+                # custom_settings
+                self.add_to_spider_settings(
+                    settings_text, settings_name, priority, class_name, filename
                 )
-                with open(filename, "w") as settings_file:
-                    settings_file.write(settings_text)
-            else:
-                print("ERROR: Given spider has no 'custom_settings' field!")
 
-    def _add_to_terminal(
+    def get_settings_dict(
+        self, setting_match: Match, setting_name: str
+    ) -> Dict[str, int]:
+        """Returns dict from setting string
+
+        Args:
+            setting_match (Match): scring, containing setting regex
+            setting_name (str): setting name
+
+        Returns:
+            Dict[str, int]: dict of settings from file
+        """
+        capture = setting_match.group(0)
+        regex = setting_name + r"\s*=[^{]+{[^}]+}"
+        capture_inner = re.search(regex, capture, re.MULTILINE)
+
+        if not capture_inner:
+            print("ERROR: could not find settings capture_inner!")
+            return {}
+        try:
+            settings = re.sub(setting_name + r"\s*=", "", capture_inner.group(0))
+            return eval(settings)
+        except SyntaxError as err:
+            print(f"ERROR: {err}")
+        return {}
+
+    def add_to_project_settings(
+        self,
+        settings_text: str,
+        settings_name: str,
+        priority: str,
+        class_name: str,
+        filename: str,
+    ) -> None:
+        """Adds newly created class to dict in project settings file. 
+        Will create new setting dict if it is not defined.
+
+        Args:
+            settings_text (str): full text of file
+            settings_name (str): scrapy setting name for created class
+            priority (str): priority of created class 
+            class_name (str): name of created class
+            filename (str): name of settings or spider file
+        """
+        setting_regex = settings_name + r"\s*=\s*{.*?}"
+        setting_str = re.search(setting_regex, settings_text, re.DOTALL)
+        if setting_str:
+            settings_dict = self.get_settings_dict(setting_str, settings_name)
+            settings_dict[class_name] = int(priority)
+            dict_str = json.dumps(settings_dict, indent=4)
+            result_str = f"{settings_name} = {dict_str}".replace("'", '"')
+            settings_text = re.sub(
+                setting_regex, result_str, settings_text, flags=re.DOTALL
+            )
+            with open(filename, "w") as settings_file:
+                settings_file.write(settings_text)
+        else:
+            # setting does not exist yet
+            print(f"Created '{settings_name}' in {filename}")
+            with open(filename, "a") as settings_file:
+                settings_file.write(f"\n{settings_name} = {{}}\n")
+            self._add_to_settings(filename, settings_name, class_name, priority)
+
+    def get_spider_class(self, filename: str) -> Optional[Spider]:
+        """Returns spider class from file name.
+
+        Args:
+            filename (str): name of spider file
+
+        Returns:
+            Optional[Spider]: spider class or None
+        """
+
+        dirname, basename = os.path.split(filename)
+        sys.path.append(dirname)
+        module_name = os.path.splitext(basename)[0]
+
+        module = importlib.import_module(module_name)
+        filename_part = filename.split(".")[0].replace("\\", "/")
+        filename_part = filename_part.split("/")[-1]
+        print(f"filename_part: {filename_part}")
+        for part in module.__dict__:
+            if isinstance(type, object):
+                module_text = str(module.__dict__[part])
+                if filename_part in module_text and "class" in module_text:
+                    needed_class = module.__dict__[part]
+                    return needed_class
+
+        return None
+
+    def add_to_spider_settings(
+        self,
+        settings_text: str,
+        settings_name: str,
+        priority: str,
+        class_name: str,
+        filename: str,
+    ):
+        """Adds newly created class to spider custom_settings dict. 
+        Will create custom_settings if they are not defined in spider.
+
+        Args:
+            settings_text (str): full text of file
+            settings_name (str): scrapy setting name for created class
+            priority (str): priority of created class
+            class_name (str): name of created class
+            filename (str): name of spider or settings file
+        """
+        needed_class = self.get_spider_class(filename)
+        if hasattr(needed_class, "custom_settings"):
+            settings_dict = needed_class.custom_settings or {}
+
+        # spider custom settings
+        if settings_dict.get(settings_name):
+            settings_dict[settings_name][class_name] = int(priority)
+        else:
+            settings_dict[settings_name] = {class_name: int(priority)}
+
+        temp_dict_str = json.dumps(settings_dict, indent=4)
+        dict_str = "    ".join([l + "\n" for l in temp_dict_str.split("\n")])
+        result_str = f"custom_settings = {dict_str}".replace("'", '"')
+
+        # will copy whole file except of old custom_settings
+        new_text = ""
+        is_saved = True
+        has_settings = False
+        for line in settings_text.split("\n"):
+            if "custom_settings" in line and not has_settings:
+                has_settings = True
+                is_saved = False
+                new_text += line.split("custom_settings")[0] + result_str
+
+            if is_saved:
+                new_text += f"{line}\n"
+            else:
+                if not line.strip() or line.startswith("    }"):
+                    is_saved = True
+
+        # create new custom_settings, because they didn`t exist in class
+        if not has_settings:
+            new_text = ""
+            for line in settings_text.split("\n"):
+                if is_saved:
+                    new_text += f"{line}\n"
+                else:
+                    if not line.strip() or line.startswith(" "):
+                        is_saved = True
+                        new_text += f"{line}\n"
+                if "class" in line and not has_settings:
+                    has_settings = True
+                    new_text += f'    """{needed_class.__doc__}"""\n'
+                    new_text += f"\n    {result_str}\n\n"
+                    is_saved = False
+
+        with open(filename, "w") as settings_file:
+            settings_file.write(new_text)
+
+    def _print_to_terminal(
         self, settings_name: str, class_name: str, priority: str
     ) -> None:
+        """Outputs settings dict to terminal.
+
+        Args:
+            settings_name (str): name of scrapy settings dict
+            class_name (str): name of setting class
+            priority (str): priority of class in settings dict
+        """
         try:
             priority = str(abs(int(priority)))
         except TypeError:
@@ -276,7 +402,7 @@ class NewCommand(ScrapyCommand):
         if opts.debug:
             print(rendered_code)
 
-        if opts.priority:
+        if opts.priority and not opts.filename:
             opts.filename = self.default_settings_filename
 
         if template_type in self.SETTINGS_NAMES and opts.filename:
@@ -298,7 +424,7 @@ class NewCommand(ScrapyCommand):
                     opts.priority,
                 )
                 if opts.priority_terminal:
-                    self._add_to_terminal(
+                    self._print_to_terminal(
                         self.SETTINGS_NAMES[template_type],
                         f"{file_prefix[0]}.{class_name}",
                         opts.priority_terminal,
@@ -313,9 +439,18 @@ class NewCommand(ScrapyCommand):
 
         self.add_init_import(file_prefix, file_name, class_name)
 
-        print(f"created {template_type} '{file_name}'")
+        print(f"Created {template_type} '{file_name}'")
 
-    def add_init_import(self, file_prefix: List[str], file_name: str, class_name: str):
+    def add_init_import(
+        self, file_prefix: List[str], file_name: str, class_name: str
+    ) -> None:
+        """Adds newly created class to module __init__.py file.
+
+        Args:
+            file_prefix (List[str]): module in which class was created
+            file_name (str): name of created file
+            class_name (str): name of created class
+        """
         init_file_path = os.path.join(*file_prefix, "__init__.py")
         if os.path.isfile(init_file_path):
             with open(init_file_path) as init_file:
