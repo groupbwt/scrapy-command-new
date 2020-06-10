@@ -11,3 +11,6 @@ from .mixins import JSONSerializable, MysqlPrimaryKeyMixin, MysqlTimestampsMixin
 
 class ${class_name}(Base, JSONSerializable, MysqlPrimaryKeyMixin, MysqlTimestampsMixin):
     __tablename__ = "${table_name}"
+
+    # TODO
+    pass

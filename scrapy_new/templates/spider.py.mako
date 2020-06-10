@@ -3,15 +3,16 @@
 from typing import Iterator, Union
 
 import scrapy
+from scrapy import Item, Request, Spider, signals
+from scrapy.crawler import Crawler
+from scrapy.http import Response
 % if use_rabbit:
+
 from pika.spec import BasicProperties
 from rabbitmq import RabbitSpider
 % endif
-from scrapy import Item, Request, signals
-from scrapy.crawler import Crawler
-from scrapy.http import Response
 <%
-    ancestors = ["scrapy.Spider"]
+    ancestors = ["Spider"]
     if use_rabbit:
         ancestors.append("RabbitSpider")
 
@@ -30,7 +31,7 @@ class ${class_name}(${ancestors}):
         return spider
 
     def __init__(self, *args, **kwargs):
-        scrapy.Spider.__init__(self, *args, **kwargs)
+        Spider.__init__(self, *args, **kwargs)
         % if use_rabbit:
         RabbitSpider.__init__(self, *args, **kwargs)
         % endif
