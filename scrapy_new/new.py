@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import importlib
 import json
-import operator
 import os
 import re
 import sys
+from optparse import Values
 from os import path
-from re import Match
-from typing import Dict, List, Optional
+from typing import Dict, List, Match, Optional
 
 import inflection
 from mako.template import Template
@@ -110,7 +109,7 @@ class NewCommand(ScrapyCommand):
             filename (str): name of settings or spider file
             settings_name (str): scrapy setting name for created class
             class_name (str):  name of created class
-            priority (str): priority of created class 
+            priority (str): priority of created class
         """
         try:
             priority = str(abs(int(priority)))
@@ -170,13 +169,13 @@ class NewCommand(ScrapyCommand):
         class_name: str,
         filename: str,
     ) -> None:
-        """Adds newly created class to dict in project settings file. 
+        """Adds newly created class to dict in project settings file.
         Will create new setting dict if it is not defined.
 
         Args:
             settings_text (str): full text of file
             settings_name (str): scrapy setting name for created class
-            priority (str): priority of created class 
+            priority (str): priority of created class
             class_name (str): name of created class
             filename (str): name of settings or spider file
         """
@@ -234,7 +233,7 @@ class NewCommand(ScrapyCommand):
         class_name: str,
         filename: str,
     ):
-        """Adds newly created class to spider custom_settings dict. 
+        """Adds newly created class to spider custom_settings dict.
         Will create custom_settings if they are not defined in spider.
 
         Args:
@@ -247,6 +246,8 @@ class NewCommand(ScrapyCommand):
         needed_class = self.get_spider_class(filename)
         if hasattr(needed_class, "custom_settings"):
             settings_dict = needed_class.custom_settings or {}
+        else:
+            settings_dict = {}
 
         # spider custom settings
         if settings_dict.get(settings_name):
@@ -312,7 +313,7 @@ class NewCommand(ScrapyCommand):
         setting = f"custom_settings = {json.dumps(setting_dict)}"
         print(f"Copy and paste this settings code to your spider:\n\n{setting}\n")
 
-    def run(self, args: list, opts: list) -> None:
+    def run(self, args: list, opts: Values) -> None:
         if len(args) < 2:
             raise UsageError()
 
